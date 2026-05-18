@@ -32,36 +32,63 @@ st.set_page_config(
 # THEME  (mirrors your notebook dark palette exactly)
 # ─────────────────────────────────────────────────────────────────────────────
 THEME = {
-    "bg":     "#0f172a", "panel":  "#111827", "grid":   "#243244",
-    "text":   "#e5e7eb", "muted":  "#94a3b8", "blue":   "#60a5fa",
-    "green":  "#34d399", "red":    "#f87171", "yellow": "#fbbf24",
-    "orange": "#fb923c", "purple": "#a78bfa", "teal":   "#2dd4bf",
-    "pink":   "#f472b6", "slate":  "#64748b",
+    "bg": "#050505",
+    "panel": "#0d0d0d",
+    "panel2": "#151515",
+    "card": "#101010",
+    "grid": "#3a3020",
+    "text": "#fff7df",
+    "muted": "#c9b37a",
+    "gold": "#d4af37",
+    "gold2": "#f5d76e",
+    "gold3": "#8a6f1f",
+    "green": "#3ddc97",
+    "red": "#ff5c5c",
+    "orange": "#ffb347",
+    "yellow": "#f5d76e",
+    "blue": "#68a8ff",
+    "purple": "#c084fc",
+    "teal": "#38e8d1",
+    "pink": "#ff7ab6",
+    "slate": "#8b8b8b",
 }
 
-# Inject global CSS
+GOLD_SEQUENCE = [
+    "#d4af37", "#f5d76e", "#b8860b", "#ffcc33", "#c9a227",
+    "#e6be4a", "#a67c00", "#ffd700", "#8a6f1f", "#fff1a8"
+]
+STATUS_COLORS = [THEME["green"], THEME["gold"], THEME["orange"], THEME["red"], THEME["blue"], THEME["purple"]]
+
+# Inject global CSS — black/gold visibility-first theme
 st.markdown(f"""
 <style>
-  /* Global dark background */
-  .stApp {{ background-color: {THEME['bg']}; color: {THEME['text']}; }}
-  section[data-testid="stSidebar"] {{ background-color: {THEME['panel']}; }}
-  /* Metric cards */
+  :root {{
+    --bg: {THEME['bg']}; --panel: {THEME['panel']}; --panel2: {THEME['panel2']};
+    --text: {THEME['text']}; --muted: {THEME['muted']}; --gold: {THEME['gold']};
+    --grid: {THEME['grid']};
+  }}
+  html, body, .stApp {{ background: radial-gradient(circle at top left, #1d1606 0%, #050505 38%, #000 100%) !important; color: var(--text) !important; }}
+  .block-container {{ padding-top: 1.3rem; max-width: 1480px; }}
+  section[data-testid="stSidebar"] {{ background: linear-gradient(180deg, #0b0b0b 0%, #050505 100%) !important; border-right: 1px solid var(--grid); }}
+  section[data-testid="stSidebar"] * {{ color: var(--text) !important; }}
+  h1, h2, h3, h4, h5, h6, p, span, label, div {{ color: inherit; }}
   div[data-testid="metric-container"] {{
-      background: {THEME['panel']}; border: 1px solid {THEME['grid']};
-      border-radius: 10px; padding: 14px;
+      background: linear-gradient(145deg, #111 0%, #080808 100%) !important;
+      border: 1px solid rgba(212,175,55,.55) !important;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.03);
+      border-radius: 16px; padding: 16px 18px;
   }}
-  div[data-testid="metric-container"] label {{ color: {THEME['muted']} !important; }}
-  div[data-testid="metric-container"] div[data-testid="stMetricValue"] {{
-      color: {THEME['text']} !important; font-size: 1.5rem !important;
-  }}
-  /* Plotly charts transparent */
-  .js-plotly-plot .plotly {{ background: transparent !important; }}
-  /* Sidebar text */
-  .css-1d391kg, .css-17eq0hr {{ color: {THEME['text']} !important; }}
-  /* Hide streamlit branding */
+  div[data-testid="metric-container"] label, div[data-testid="metric-container"] [data-testid="stMetricDelta"] {{ color: var(--muted) !important; }}
+  div[data-testid="metric-container"] div[data-testid="stMetricValue"] {{ color: var(--gold) !important; font-size: 1.55rem !important; font-weight: 800 !important; }}
+  .stPlotlyChart {{ background: #0b0b0b; border: 1px solid rgba(212,175,55,.35); border-radius: 16px; padding: 8px; box-shadow: 0 12px 36px rgba(0,0,0,.30); }}
+  .js-plotly-plot .plotly, .plot-container {{ background: transparent !important; }}
+  .stDataFrame, div[data-testid="stDataFrame"] {{ background: #0b0b0b !important; border: 1px solid rgba(212,175,55,.35); border-radius: 14px; padding: 6px; }}
+  .stAlert {{ background-color: #111 !important; color: var(--text) !important; border: 1px solid rgba(212,175,55,.35) !important; }}
+  button, .stButton button {{ background: #151515 !important; color: var(--gold) !important; border: 1px solid var(--gold) !important; }}
+  input, textarea, select {{ color: var(--text) !important; background-color: #111 !important; }}
+  [data-baseweb="radio"] div, [data-baseweb="checkbox"] div {{ color: var(--text) !important; }}
+  hr {{ border-color: rgba(212,175,55,.25); }}
   #MainMenu, footer, header {{ visibility: hidden; }}
-  /* Dataframe */
-  .dataframe {{ background: {THEME['panel']} !important; color: {THEME['text']} !important; }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -100,18 +127,50 @@ def info_box(title, body, accent=None):
     </div>""", unsafe_allow_html=True)
 
 def apply_layout(fig, title="", height=420):
+    """Consistent high-contrast Plotly layout. Safe for normal + 3D charts."""
     fig.update_layout(
-        title=dict(text=title, x=0.01, font=dict(size=16, color=THEME["text"])),
-        paper_bgcolor=THEME["panel"], plot_bgcolor=THEME["panel"],
-        font=dict(color=THEME["text"]),
-        xaxis=dict(showgrid=False, color=THEME["muted"]),
-        yaxis=dict(showgrid=True, gridcolor=THEME["grid"], zeroline=False, color=THEME["muted"]),
-        margin=dict(l=30, r=30, t=50, b=30),
+        title=dict(text=title, x=0.01, font=dict(size=17, color=THEME["gold2"], family="Arial Black")),
+        paper_bgcolor=THEME["panel"],
+        plot_bgcolor=THEME["panel"],
+        font=dict(color=THEME["text"], size=12),
+        xaxis=dict(showgrid=False, color=THEME["muted"], linecolor=THEME["grid"], tickfont=dict(color=THEME["text"])),
+        yaxis=dict(showgrid=True, gridcolor=THEME["grid"], zeroline=False, color=THEME["muted"], tickfont=dict(color=THEME["text"])),
+        margin=dict(l=35, r=35, t=58, b=35),
         hovermode="x unified",
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0, font=dict(color=THEME["text"])),
         height=height,
     )
+    fig.update_layout(
+        scene=dict(
+            bgcolor=THEME["panel"],
+            xaxis=dict(backgroundcolor=THEME["panel"], gridcolor=THEME["grid"], color=THEME["text"]),
+            yaxis=dict(backgroundcolor=THEME["panel"], gridcolor=THEME["grid"], color=THEME["text"]),
+            zaxis=dict(backgroundcolor=THEME["panel"], gridcolor=THEME["grid"], color=THEME["text"]),
+        )
+    )
     return fig
+
+def safe_plotly(fig, title="Chart", height=420):
+    """Render a chart without letting one bad visual stop the rest of the dashboard."""
+    try:
+        apply_layout(fig, title, height)
+        st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+    except Exception as e:
+        info_box(f"Chart skipped: {title}", f"Reason: {e}", THEME["orange"])
+
+def money_table(df, formatter="${:,.0f}"):
+    """Dark/gold dataframe style that avoids unreadable matplotlib colour maps."""
+    return (df.style
+        .format(formatter)
+        .set_properties(**{
+            "background-color": "#0b0b0b",
+            "color": THEME["text"],
+            "border-color": THEME["grid"],
+        })
+        .set_table_styles([
+            {"selector": "th", "props": [("background-color", "#151515"), ("color", THEME["gold2"]), ("border-color", THEME["grid"])]},
+            {"selector": "td", "props": [("border-color", THEME["grid"])]},
+        ]))
 
 def normalize_cols(df):
     df = df.copy()
@@ -523,7 +582,7 @@ if show_cashflow:
     transfer_df = df[df["transfer_class"] != ""].groupby("transfer_class")["transfer_amount"].sum().reset_index()
     if not transfer_df.empty:
         fig3 = px.pie(transfer_df, names="transfer_class", values="transfer_amount", hole=0.5,
-                      color_discrete_sequence=[THEME["blue"],THEME["green"],THEME["orange"],THEME["slate"]])
+                      color_discrete_sequence=GOLD_SEQUENCE)
         apply_layout(fig3, "Transfer Classification — Full Period", 360)
         st.plotly_chart(fig3, use_container_width=True)
 
@@ -606,13 +665,17 @@ if show_spend:
 
     portable_pivot = (
         portable_df[portable_df["month_start"].isin(portable_12m["month_start"])]
-        .groupby(["Month_Label","category"], as_index=False)["amount"].sum()
-        .pivot_table(index="Month_Label", columns="category", values="amount", aggfunc="sum", fill_value=0)
+        .assign(amount_abs=lambda x: x["amount"].abs())
+        .groupby(["Month_Label","category"], as_index=False)["amount_abs"].sum()
+        .pivot_table(index="Month_Label", columns="category", values="amount_abs", aggfunc="sum", fill_value=0)
     )
-    portable_pivot = portable_pivot.loc[[m for m in portable_12m["Month_Label"].tolist() if m in portable_pivot.index]]
-    portable_pivot["TOTAL"] = portable_pivot.sum(axis=1)
-    st.dataframe(portable_pivot.style.format("${:,.0f}").background_gradient(cmap="Blues", subset=["TOTAL"]),
-                 use_container_width=True)
+    if portable_pivot.empty:
+        info_box("No portable expense data", "No non-rent expense rows were found for the selected period.", THEME["orange"])
+    else:
+        month_order = [m for m in portable_12m["Month_Label"].tolist() if m in portable_pivot.index]
+        portable_pivot = portable_pivot.loc[month_order]
+        portable_pivot["TOTAL"] = portable_pivot.sum(axis=1)
+        st.dataframe(money_table(portable_pivot), use_container_width=True)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # §4-7  ANOMALY ENGINE + FORECAST
@@ -631,7 +694,7 @@ if show_anomaly:
     cat_total["share_pct"] = cat_total["amount"] / total_exp * 100
 
     fig = px.bar(cat_total.head(10), x="category", y="share_pct",
-                 color="share_pct", color_continuous_scale="Blues",
+                 color="share_pct", color_continuous_scale=[[0, "#3a3020"], [0.5, "#d4af37"], [1, "#fff1a8"]],
                  text=cat_total.head(10)["share_pct"].apply(lambda x: f"{x:.1f}%"))
     apply_layout(fig, "Expense Concentration — Full Period (Top 10 Categories)", 380)
     fig.update_yaxes(title="Share %", ticksuffix="%")
@@ -742,14 +805,13 @@ if show_portfolio:
             c1, c2 = st.columns(2)
             with c1:
                 fig = px.pie(holdings_df, names="ticker", values="market_value_aud", hole=0.5,
-                             color_discrete_sequence=[THEME["blue"],THEME["green"],THEME["orange"],
-                                                      THEME["purple"],THEME["teal"]])
+                             color_discrete_sequence=GOLD_SEQUENCE)
                 apply_layout(fig, "Portfolio Allocation", 360)
                 st.plotly_chart(fig, use_container_width=True)
             with c2:
                 fig2 = px.bar(holdings_df.sort_values("gain_aud"), x="gain_aud", y="ticker",
                               orientation="h", color="gain_aud",
-                              color_continuous_scale="RdYlGn")
+                              color_continuous_scale=[[0, THEME["red"]], [0.5, THEME["gold"]], [1, THEME["green"]]])
                 apply_layout(fig2, "Unrealised Gain/Loss by Ticker", 360)
                 fig2.update_xaxes(tickprefix="$", tickformat=",")
                 st.plotly_chart(fig2, use_container_width=True)
@@ -1024,8 +1086,7 @@ if show_lvr:
     sens_df = pd.DataFrame(rows)
     st.markdown(f"<b style='color:{THEME['text']};'>Monthly Repayment Sensitivity ($)</b>", unsafe_allow_html=True)
     fmt_cols = {col: "${:,.0f}" for col in sens_df.columns if col != "Rate"}
-    st.dataframe(sens_df.style.format(fmt_cols).background_gradient(
-        cmap="RdYlGn_r", subset=[c for c in sens_df.columns if "$" in c]), use_container_width=True)
+    st.dataframe(money_table(sens_df, fmt_cols), use_container_width=True)
 
     # Rate vs repayment curve
     base_loan    = 654885
@@ -1133,7 +1194,7 @@ if show_readiness:
             "Amount": [DEPOSIT_CURRENT, EMERGENCY_CURRENT, BUFFER_CURRENT, max(UNALLOCATED,0)]
         }).query("Amount > 0")
         fig_d = px.pie(pie_data, names="Bucket", values="Amount", hole=0.55,
-                       color_discrete_sequence=[THEME["blue"],THEME["green"],THEME["orange"],THEME["slate"]])
+                       color_discrete_sequence=GOLD_SEQUENCE)
         apply_layout(fig_d, f"Capital Allocation — ${TOTAL_LIQUID_CASH:,.0f}", 360)
         st.plotly_chart(fig_d, use_container_width=True)
 
