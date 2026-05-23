@@ -33,7 +33,79 @@ def latest_n(arr, n=12):
     return arr.sort_values("month_start").tail(n).copy()
 
 
-def inject_theme():
+def inject_theme(report_mode=False):
+    report_css = """
+@media print {
+  @page { size: A4 landscape; margin: 8mm; }
+
+  html, body, .stApp, [data-testid="stAppViewContainer"],
+  .main, .block-container {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  [data-testid="stSidebar"],
+  header, footer, #MainMenu,
+  [data-testid="stToolbar"],
+  [data-testid="stDecoration"],
+  .stDeployButton,
+  .stButton,
+  [data-testid="stFileUploader"],
+  iframe {
+    display: none !important;
+  }
+
+  .block-container {
+    max-width: 100% !important;
+    padding: 8mm !important;
+  }
+
+  div[data-testid="stVerticalBlock"],
+  div[data-testid="stHorizontalBlock"],
+  div[data-testid="column"],
+  div[data-testid="stElementContainer"],
+  .stPlotlyChart,
+  [data-testid="stDataFrame"],
+  .fortress-section,
+  .fortress-box,
+  .fortress-hero {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    break-inside: avoid-page !important;
+    page-break-inside: avoid !important;
+  }
+
+  .stPlotlyChart {
+    margin-bottom: 18px !important;
+    box-shadow: none !important;
+  }
+
+  h1, h2, h3, .fortress-section {
+    break-after: avoid-page !important;
+    page-break-after: avoid !important;
+  }
+
+  .page-break-before {
+    break-before: page !important;
+    page-break-before: always !important;
+  }
+}
+"""
+    report_mode_css = """
+<style>
+.report-mode-note {
+  display: block;
+  margin: 8px 0 18px;
+  padding: 12px 14px;
+  border-left: 4px solid #F2C94C;
+  background: rgba(242,201,76,.08);
+  border-radius: 12px;
+}
+</style>
+""" if report_mode else ""
     st.markdown(f"""
 <style>
 :root {{
@@ -76,8 +148,9 @@ hr {{ border-color: rgba(242,201,76,.20); }}
   .fortress-section {{ padding:15px 14px; border-radius:16px; }}
   .stPlotlyChart {{ padding:4px; }}
 }}
+{{report_css}}
 </style>
-""", unsafe_allow_html=True)
+""" + report_mode_css, unsafe_allow_html=True)
 
 
 def section_header(icon, title, subtitle):

@@ -16,7 +16,6 @@ from sections import anomaly, cashflow, dca, mortgage, portfolio, readiness, spe
 warnings.filterwarnings("ignore")
 
 st.set_page_config(page_title=PAGE_TITLE, page_icon=PAGE_ICON, layout="wide", initial_sidebar_state="expanded")
-inject_theme()
 
 with st.sidebar:
     st.markdown(f"""
@@ -24,6 +23,9 @@ with st.sidebar:
       <div style="font-size:23px;font-weight:900;color:{THEME['text']};">💼 Fortress</div>
       <div style="font-size:12px;color:{THEME['muted']};margin-top:4px;">Personal Financial Intelligence</div>
     </div>""", unsafe_allow_html=True)
+    st.divider()
+    report_mode = st.toggle("📄 Report / PDF Mode", value=False, help="Use this before browser Print > Save as PDF. It removes print blockers and expands layout for multi-page PDF.")
+    st.caption("For PDF: scroll to bottom once, then Ctrl+P > Save as PDF > Landscape > Background graphics ON.")
     st.divider()
     st.markdown("**📊 Live Parameters**")
     total_liquid_cash = st.number_input("Total Liquid Cash ($)", value=168000, step=1000)
@@ -49,6 +51,16 @@ with st.sidebar:
     show_dca = st.checkbox("§15 · DCA Engine & $1.7M", value=True)
     st.divider()
     st.caption(f"Last refreshed: {datetime.now().strftime('%d %b %Y %H:%M')}")
+
+inject_theme(report_mode=report_mode)
+
+if report_mode:
+    st.markdown("""
+    <div class="report-mode-note">
+      <b>📄 Report / PDF Mode is ON.</b><br/>
+      Scroll to the bottom once so all charts render, then press Ctrl+P / Cmd+P, choose Save as PDF, Landscape, and enable Background graphics.
+    </div>
+    """, unsafe_allow_html=True)
 
 banner()
 workbook_buffer = get_workbook_from_ui()
